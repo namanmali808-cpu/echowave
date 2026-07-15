@@ -2,6 +2,7 @@ class ApiConstants {
   ApiConstants._();
 
   static const String baseUrl = 'https://api.deezer.com';
+  static const String itunesSearch = 'https://itunes.apple.com/search';
 
   static const String search = '/search';
   static const String chart = '/chart';

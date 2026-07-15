@@ -5,20 +5,17 @@ import 'package:echowave/data/services/update_service.dart';
 class UpdateDialog extends StatefulWidget {
   final UpdateInfo updateInfo;
   final UpdateService updateService;
-  final VoidCallback? onLater;
 
   const UpdateDialog({
     super.key,
     required this.updateInfo,
     required this.updateService,
-    this.onLater,
   });
 
   static Future<void> show(
     BuildContext context, {
     required UpdateInfo updateInfo,
     required UpdateService updateService,
-    VoidCallback? onLater,
   }) {
     return showDialog(
       context: context,
@@ -26,7 +23,6 @@ class UpdateDialog extends StatefulWidget {
       builder: (ctx) => UpdateDialog(
         updateInfo: updateInfo,
         updateService: updateService,
-        onLater: onLater,
       ),
     );
   }
@@ -67,6 +63,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
           _downloadedPath = path;
           _isDownloading = false;
         });
+        _install();
       }
     } catch (_) {
       if (mounted) {
@@ -210,22 +207,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
                 ),
               ),
             ],
-            if (!_isDownloading && !hasDownloaded) ...[
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  widget.onLater?.call();
-                },
-                child: Text(
-                  'Later',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
+
           ],
         ),
       ),
