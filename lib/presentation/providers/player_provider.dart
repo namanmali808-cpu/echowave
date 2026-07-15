@@ -1,13 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:echowave/domain/entities/song.dart';
-import 'package:echowave/data/services/audio_service.dart';
-
-final audioServiceProvider = Provider<AudioService>((ref) {
-  final service = AudioService();
-  ref.onDispose(() => service.dispose());
-  return service;
-});
 
 enum LoopModeState { off, one, all }
 
@@ -60,37 +54,64 @@ class PlayerStateData {
 }
 
 class PlayerNotifier extends StateNotifier<PlayerStateData> {
-  final AudioService _audioService;
+  final AudioPlayer _player = AudioPlayer();
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Duration?>? _durationSub;
-  StreamSubscription<PlaybackState>? _playerStateSub;
+  StreamSubscription<PlayerState>? _playerStateSub;
+  List<Song> _queue = [];
+  int _currentIndex = -1;
+  bool _isShuffled = false;
+  List<int> _shuffleOrder = [];
+  int _shuffleIndex = 0;
 
-  PlayerNotifier(this._audioService) : super(const PlayerStateData()) {
-    _positionSub = _audioService.positionStream.listen((pos) {
+  PlayerNotifier() : super(const PlayerStateData()) {
+    _positionSub = _player.positionStream.listen((pos) {
       state = state.copyWith(position: pos);
     });
-    _durationSub = _audioService.durationStream.listen((dur) {
-      state = state.copyWith(duration: dur);
+    _durationSub = _player.durationStream.listen((dur) {
+      state = state.copyWith(duration: dur ?? Duration.zero);
     });
-    _playerStateSub = _audioService.stateStream.listen((ps) {
+    _playerStateSub = _player.playerStateStream.listen((ps) {
       state = state.copyWith(
-        isPlaying: ps == PlaybackState.playing,
-        isLoading: ps == PlaybackState.loading,
+        isPlaying: ps.playing,
+        isLoading: ps.processingState == ProcessingState.loading || ps.processingState == ProcessingState.buffering,
       );
+      if (ps.processingState == ProcessingState.completed) {
+        _onTrackComplete();
+      }
     });
+  }
+
+  void _onTrackComplete() {
+    final newIndex = _player.currentIndex ?? -1;
+    if (newIndex >= 0 && newIndex < _queue.length) {
+      _currentIndex = newIndex;
+      state = state.copyWith(currentSong: _queue[_currentIndex]);
+    }
   }
 
   Future<void> playSong(Song song, {List<Song>? queue}) async {
     state = state.copyWith(isLoading: true);
     if (queue != null) {
-      final index = queue.indexWhere((s) => s.id == song.id);
-      await _audioService.setQueue(queue, initialIndex: index >= 0 ? index : 0);
+      _queue = List.from(queue);
+      _currentIndex = queue.indexWhere((s) => s.id == song.id);
+      if (_currentIndex < 0) _currentIndex = 0;
+      final sources = queue.map((s) => AudioSource.uri(Uri.parse(s.url))).toList();
+      await _player.setAudioSource(
+        ConcatenatingAudioSource(children: sources),
+        initialIndex: _currentIndex,
+      );
+      await _player.setSpeed(state.speed);
     } else {
-      await _audioService.playSong(song);
+      _queue = [song];
+      _currentIndex = 0;
+      await _player.setAudioSource(AudioSource.uri(Uri.parse(song.url)));
+      await _player.setSpeed(state.speed);
     }
+    _player.play();
     state = state.copyWith(
       currentSong: song,
-      queue: queue ?? [song],
+      queue: List.from(_queue),
       isPlaying: true,
       isLoading: false,
       position: Duration.zero,
@@ -98,72 +119,94 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
   }
 
   Future<void> togglePlayPause() async {
-    if (_audioService.currentState == PlaybackState.playing) {
-      await _audioService.pause();
+    if (_player.playing) {
+      await _player.pause();
       state = state.copyWith(isPlaying: false);
     } else {
-      await _audioService.resume();
+      await _player.play();
       state = state.copyWith(isPlaying: true);
     }
   }
 
   Future<void> next() async {
-    await _audioService.next();
+    await _player.seekToNext();
+    final newIndex = _player.currentIndex ?? -1;
+    if (newIndex >= 0 && newIndex < _queue.length) {
+      _currentIndex = newIndex;
+    }
     state = state.copyWith(
-      currentSong: _audioService.currentSong,
+      currentSong: _currentIndex >= 0 ? _queue[_currentIndex] : null,
       position: Duration.zero,
     );
   }
 
   Future<void> previous() async {
-    await _audioService.previous();
+    if (_player.position.inSeconds > 3) {
+      await _player.seek(Duration.zero);
+    } else {
+      await _player.seekToPrevious();
+      final newIndex = _player.currentIndex ?? -1;
+      if (newIndex >= 0 && newIndex < _queue.length) {
+        _currentIndex = newIndex;
+      }
+    }
     state = state.copyWith(
-      currentSong: _audioService.currentSong,
+      currentSong: _currentIndex >= 0 ? _queue[_currentIndex] : null,
       position: Duration.zero,
     );
   }
 
   Future<void> seek(Duration position) async {
-    await _audioService.seek(position);
+    await _player.seek(position);
     state = state.copyWith(position: position);
   }
 
   void toggleShuffle() {
-    final enabled = _audioService.shuffleMode == ShuffleMode.off;
-    _audioService.shuffle(enabled: enabled);
-    state = state.copyWith(isShuffled: enabled);
+    _isShuffled = !_isShuffled;
+    if (_isShuffled) {
+      _generateShuffleOrder();
+      _shuffleIndex = _shuffleOrder.indexOf(_currentIndex);
+      if (_shuffleIndex == -1) _shuffleIndex = 0;
+    }
+    state = state.copyWith(isShuffled: _isShuffled);
   }
 
   void toggleLoopMode() {
-    final modes = [RepeatMode.off, RepeatMode.all, RepeatMode.one];
-    final currentIndex = modes.indexOf(_audioService.repeatMode);
+    final modes = [LoopModeState.off, LoopModeState.one, LoopModeState.all];
+    final currentIndex = modes.indexOf(state.loopMode);
     final nextMode = modes[(currentIndex + 1) % modes.length];
-    _audioService.setRepeatMode(nextMode);
-    state = state.copyWith(
-      loopMode: LoopModeState.values[nextMode.index],
-    );
+    switch (nextMode) {
+      case LoopModeState.off:
+        _player.setLoopMode(LoopMode.off);
+      case LoopModeState.one:
+        _player.setLoopMode(LoopMode.one);
+      case LoopModeState.all:
+        _player.setLoopMode(LoopMode.all);
+    }
+    state = state.copyWith(loopMode: nextMode);
   }
 
   Future<void> setSpeed(double speed) async {
-    await _audioService.setSpeed(speed);
+    await _player.setSpeed(speed);
     state = state.copyWith(speed: speed);
   }
 
   void addToQueue(Song song) {
-    _audioService.addToQueue(song);
-    state = state.copyWith(queue: _audioService.queue);
+    _queue.add(song);
+    state = state.copyWith(queue: List.from(_queue));
   }
 
   void removeFromQueue(int index) {
-    _audioService.removeFromQueue(index);
-    state = state.copyWith(
-      queue: _audioService.queue,
-      currentSong: _audioService.currentSong,
-    );
+    if (index >= 0 && index < _queue.length) {
+      _queue.removeAt(index);
+      state = state.copyWith(queue: List.from(_queue));
+    }
   }
 
   void clearQueue() {
-    _audioService.clearQueue();
+    _queue.clear();
+    _currentIndex = -1;
+    _player.stop();
     state = state.copyWith(
       queue: [],
       currentSong: null,
@@ -172,16 +215,21 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
     );
   }
 
+  void _generateShuffleOrder() {
+    _shuffleOrder = List.generate(_queue.length, (i) => i);
+    _shuffleOrder.shuffle();
+  }
+
   @override
   void dispose() {
     _positionSub?.cancel();
     _durationSub?.cancel();
     _playerStateSub?.cancel();
+    _player.dispose();
     super.dispose();
   }
 }
 
 final playerProvider = StateNotifierProvider<PlayerNotifier, PlayerStateData>((ref) {
-  final audioService = ref.watch(audioServiceProvider);
-  return PlayerNotifier(audioService);
+  return PlayerNotifier();
 });

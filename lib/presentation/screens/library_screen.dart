@@ -95,14 +95,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                     ),
                     const SizedBox(width: 12),
                     _QuickActionCard(
-                      icon: Icons.download_rounded,
-                      label: 'Downloads',
-                      color: const Color(0xFF6C63FF),
-                      count: 0,
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: 12),
-                    _QuickActionCard(
                       icon: Icons.history_rounded,
                       label: 'History',
                       color: const Color(0xFFF59E0B),
