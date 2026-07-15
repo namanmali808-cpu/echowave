@@ -1,0 +1,20 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    avoid_print: true
+    prefer_single_quotes: true
+    sort_child_properties_last: true
+    use_key_in_widget_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    avoid_unnecessary_containers: true
+    prefer_const_constructors_in_immutables: true
+    avoid_void_async: true
+    await_only_futures: true
+    unawaited_futures: false
+    use_super_parameters: true
+    curly_braces_in_flow_control_structures: true
+    no_leading_underscores_for_local_identifiers: true
+    no_leading_underscores_for_library_prefixes: true
