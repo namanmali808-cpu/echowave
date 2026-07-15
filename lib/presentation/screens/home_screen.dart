@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:echowave/domain/entities/song.dart';
 import 'package:echowave/domain/entities/album.dart';
 import 'package:echowave/domain/entities/artist.dart';
+import 'package:echowave/data/datasources/remote_datasource.dart';
 import 'package:echowave/presentation/providers/player_provider.dart';
 import 'package:echowave/presentation/widgets/album_card.dart';
 import 'package:echowave/presentation/widgets/artist_card.dart';
@@ -24,33 +25,23 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final playerState = ref.watch(playerProvider);
 
-    final recentlyPlayed = [
-      Song(id: 'r1', title: 'Blinding Lights', artist: 'The Weeknd', artistId: 'a1', album: 'After Hours', albumId: 'al1', albumArtUrl: '', duration: 200, url: ''),
-      Song(id: 'r2', title: 'Shape of You', artist: 'Ed Sheeran', artistId: 'a2', album: 'Divide', albumId: 'al2', albumArtUrl: '', duration: 233, url: ''),
-      Song(id: 'r3', title: 'Bohemian Rhapsody', artist: 'Queen', artistId: 'a3', album: 'A Night at the Opera', albumId: 'al3', albumArtUrl: '', duration: 354, url: ''),
-      Song(id: 'r4', title: 'Hotel California', artist: 'Eagles', artistId: 'a4', album: 'Hotel California', albumId: 'al4', albumArtUrl: '', duration: 391, url: ''),
-    ];
+    final demo = RemoteDataSource.demoSongs.map((m) => m.toEntity()).toList();
+    final recentlyPlayed = demo;
+    final trendingNow = demo.reversed.toList();
 
     final madeForYou = [
-      Album(id: 'al1', title: 'Today\'s Top Hits', artist: 'Various', artistId: 'v1', coverUrl: '', songs: []),
-      Album(id: 'al2', title: 'Chill Vibes', artist: 'Various', artistId: 'v2', coverUrl: '', songs: []),
-      Album(id: 'al3', title: 'Workout Energy', artist: 'Various', artistId: 'v3', coverUrl: '', songs: []),
-      Album(id: 'al4', title: 'Late Night Jazz', artist: 'Various', artistId: 'v4', coverUrl: '', songs: []),
+      Album(id: 'al1', title: 'Today\'s Top Hits', artist: 'Various', artistId: 'v1', coverUrl: 'https://picsum.photos/seed/top-hits/200/200', songs: const []),
+      Album(id: 'al2', title: 'Chill Vibes', artist: 'Various', artistId: 'v2', coverUrl: 'https://picsum.photos/seed/chill/200/200', songs: const []),
+      Album(id: 'al3', title: 'Workout Energy', artist: 'Various', artistId: 'v3', coverUrl: 'https://picsum.photos/seed/workout/200/200', songs: const []),
+      Album(id: 'al4', title: 'Late Night Jazz', artist: 'Various', artistId: 'v4', coverUrl: 'https://picsum.photos/seed/jazz/200/200', songs: const []),
     ];
 
     final popularArtists = [
-      Artist(id: 'ar1', name: 'The Weeknd', imageUrl: ''),
-      Artist(id: 'ar2', name: 'Ed Sheeran', imageUrl: ''),
-      Artist(id: 'ar3', name: 'Queen', imageUrl: ''),
-      Artist(id: 'ar4', name: 'Taylor Swift', imageUrl: ''),
-      Artist(id: 'ar5', name: 'Dua Lipa', imageUrl: ''),
-    ];
-
-    final trendingNow = [
-      Song(id: 't1', title: 'Flowers', artist: 'Miley Cyrus', artistId: 'm1', album: 'Endless Summer Vacation', albumId: 'es1', albumArtUrl: '', duration: 200, url: ''),
-      Song(id: 't2', title: 'Kill Bill', artist: 'SZA', artistId: 's1', album: 'SOS', albumId: 'sos1', albumArtUrl: '', duration: 233, url: ''),
-      Song(id: 't3', title: 'Creepin\'', artist: 'Metro Boomin', artistId: 'mb1', album: 'Heroes & Villains', albumId: 'hv1', albumArtUrl: '', duration: 221, url: ''),
-      Song(id: 't4', title: 'Anti-Hero', artist: 'Taylor Swift', artistId: 'ts1', album: 'Midnights', albumId: 'md1', albumArtUrl: '', duration: 200, url: ''),
+      Artist(id: 'ar1', name: 'The Weeknd', imageUrl: 'https://picsum.photos/seed/weeknd/200/200'),
+      Artist(id: 'ar2', name: 'Ed Sheeran', imageUrl: 'https://picsum.photos/seed/edsheeran/200/200'),
+      Artist(id: 'ar3', name: 'Queen', imageUrl: 'https://picsum.photos/seed/queen/200/200'),
+      Artist(id: 'ar4', name: 'Taylor Swift', imageUrl: 'https://picsum.photos/seed/taylor/200/200'),
+      Artist(id: 'ar5', name: 'Dua Lipa', imageUrl: 'https://picsum.photos/seed/dualipa/200/200'),
     ];
 
     return Scaffold(
