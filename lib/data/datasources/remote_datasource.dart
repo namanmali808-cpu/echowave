@@ -561,9 +561,14 @@ class RemoteDataSource {
   static Future<String> getYouTubeAudioUrl(String videoId) async {
     try {
       final manifest = await _yt.videos.streams.getManifest(videoId);
-      final audio = manifest.audioOnly;
-      if (audio.isNotEmpty) {
-        return audio.last.url.toString();
+      if (manifest.audioOnly.isNotEmpty) {
+        return manifest.audioOnly.withHighestBitrate().url.toString();
+      }
+      if (manifest.audio.isNotEmpty) {
+        return manifest.audio.withHighestBitrate().url.toString();
+      }
+      if (manifest.muxed.isNotEmpty) {
+        return manifest.muxed.withHighestBitrate().url.toString();
       }
     } catch (_) {}
     return '';
