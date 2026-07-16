@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:echowave/data/services/update_service.dart';
 import 'package:echowave/presentation/providers/auth_provider.dart';
 import 'package:echowave/presentation/widgets/update_dialog.dart';
-import 'package:echowave/core/constants/app_constants.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -35,8 +34,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
     _controller.forward();
-    _checkForUpdate();
-    _navigateAfterDelay();
+    _initApp();
+  }
+
+  Future<void> _initApp() async {
+    await _checkForUpdate();
+    await _navigateAfterDelay();
   }
 
   Future<void> _checkForUpdate() async {
@@ -57,7 +60,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _navigateAfterDelay() async {
-    await Future.delayed(AppConstants.splashDuration);
+    await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
     var authState = ref.read(authProvider);
     if (authState.state == AuthState.loading) {

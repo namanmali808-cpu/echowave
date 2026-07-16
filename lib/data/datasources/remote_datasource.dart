@@ -53,7 +53,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/blinding-lights/200/200',
       duration: 200,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/be/62/31/be62310b-f424-d94f-7070-5c342c22e001/mzaf_3947526926745603918.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
       genre: 'Pop',
     ),
     SongModel(
@@ -66,7 +66,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/shape-of-you/200/200',
       duration: 233,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/de/0b/bc/de0bbcaa-1eef-7a64-a526-8ce524135a58/mzaf_4433015177243361913.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
       genre: 'Pop',
     ),
     SongModel(
@@ -79,7 +79,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/bohemian-rhapsody/200/200',
       duration: 354,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/3f/ed/cb/3fedcb4b-6ac0-0f88-dda8-d41a96c6f600/mzaf_1039144130883047614.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
       genre: 'Rock',
     ),
     SongModel(
@@ -92,7 +92,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/hotel-california/200/200',
       duration: 391,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/72/79/13/727913e5-6cf7-650f-299d-51cde99b1c07/mzaf_16842664206356071168.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
       genre: 'Rock',
     ),
     SongModel(
@@ -105,7 +105,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/billie-jean/200/200',
       duration: 294,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/36/78/fe/3678fe63-b187-48e5-4940-879b8a7e5e8a/mzaf_17914568650308437410.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
       genre: 'Pop',
     ),
     SongModel(
@@ -118,7 +118,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/stairway-to-heaven/200/200',
       duration: 482,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/71/3e/93/713e93b8-b637-7933-3f0c-cbde735648f4/mzaf_6266506310481719163.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
       genre: 'Rock',
     ),
     SongModel(
@@ -131,7 +131,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/smells-like-teen-spirit/200/200',
       duration: 301,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/14/e9/e4/14e9e474-a4e6-b6c0-9f72-20a91e58f7df/mzaf_4351844841409463338.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
       genre: 'Rock',
     ),
     SongModel(
@@ -144,7 +144,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/dancing-queen/200/200',
       duration: 231,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/b9/78/57/b978570d-0398-4268-57ff-30b393c02de8/mzaf_16287802414900148983.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
       genre: 'Pop',
     ),
     SongModel(
@@ -157,7 +157,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/sweet-child-o-mine/200/200',
       duration: 356,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/be/3c/78/be3c7869-83ac-4d50-3710-78b229cd5208/mzaf_9315875699620155609.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
       genre: 'Rock',
     ),
     SongModel(
@@ -170,7 +170,7 @@ class RemoteDataSource {
       albumArtUrl:
           'https://picsum.photos/seed/imagine/200/200',
       duration: 187,
-      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/0d/3a/ff/0d3aff0f-a66f-46f2-6415-d174a619daae/mzaf_12507925438133098017.plus.aac.p.m4a',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
       genre: 'Pop',
     ),
   ];
