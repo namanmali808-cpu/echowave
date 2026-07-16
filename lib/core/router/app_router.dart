@@ -15,6 +15,8 @@ import 'package:echowave/presentation/screens/favorites_screen.dart';
 import 'package:echowave/presentation/screens/history_screen.dart';
 import 'package:echowave/presentation/screens/settings_screen.dart';
 import 'package:echowave/presentation/screens/profile_screen.dart';
+import 'package:echowave/presentation/screens/album_detail_screen.dart';
+import 'package:echowave/presentation/screens/artist_detail_screen.dart';
 import 'package:echowave/presentation/providers/player_provider.dart';
 import 'package:echowave/presentation/widgets/mini_player.dart';
 
@@ -162,9 +164,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return Scaffold(
-            body: Center(child: Text('Album: $id')),
-          );
+          return AlbumDetailScreen(albumId: id);
         },
       ),
       GoRoute(
@@ -173,9 +173,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return Scaffold(
-            body: Center(child: Text('Artist: $id')),
-          );
+          return ArtistDetailScreen(artistId: id);
         },
       ),
     ],

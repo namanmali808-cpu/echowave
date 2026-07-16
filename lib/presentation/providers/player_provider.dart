@@ -98,51 +98,59 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
   Future<void> playSong(Song song, {List<Song>? queue}) async {
     state = state.copyWith(isLoading: true);
     Song songToPlay = song;
-    if (songToPlay.url.isEmpty && songToPlay.id.startsWith('yt_')) {
-      final videoId = songToPlay.id.replaceFirst('yt_', '');
-      final url = await _getYouTubeAudioUrl(videoId);
-      if (url.isNotEmpty) {
-        songToPlay = songToPlay.copyWith(url: url);
-      } else {
-        songToPlay = songToPlay.copyWith(
-          url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-        );
+    try {
+      if (songToPlay.url.isEmpty && songToPlay.id.startsWith('yt_')) {
+        final videoId = songToPlay.id.replaceFirst('yt_', '');
+        final url = await _getYouTubeAudioUrl(videoId);
+        if (url.isNotEmpty) {
+          songToPlay = songToPlay.copyWith(url: url);
+        }
       }
-    }
+    } catch (_) {}
     if (songToPlay.url.isEmpty) {
       songToPlay = songToPlay.copyWith(
         url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
       );
     }
-    if (queue != null) {
-      _queue = List.from(queue);
-      _currentIndex = queue.indexWhere((s) => s.id == song.id);
-      if (_currentIndex < 0) _currentIndex = 0;
-      _queue[_currentIndex] = songToPlay;
-      final sources = _queue.map((s) {
-        final u = s.url.isNotEmpty ? s.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-        return AudioSource.uri(Uri.parse(u));
-      }).toList();
-      await _player.setAudioSource(
-        ConcatenatingAudioSource(children: sources),
-        initialIndex: _currentIndex,
+    try {
+      await _player.stop();
+      if (queue != null) {
+        _queue = List.from(queue);
+        _currentIndex = queue.indexWhere((s) => s.id == song.id);
+        if (_currentIndex < 0) _currentIndex = 0;
+        _queue[_currentIndex] = songToPlay;
+        final sources = _queue.map((s) {
+          final u = s.url.isNotEmpty ? s.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+          return AudioSource.uri(Uri.parse(u));
+        }).toList();
+        await _player.setAudioSource(
+          ConcatenatingAudioSource(children: sources),
+          initialIndex: _currentIndex,
+        );
+      } else {
+        _queue = [songToPlay];
+        _currentIndex = 0;
+        await _player.setAudioSource(
+          AudioSource.uri(Uri.parse(songToPlay.url)),
+        );
+      }
+      await _player.setSpeed(state.speed);
+      await _player.play();
+      state = state.copyWith(
+        currentSong: songToPlay,
+        queue: List.from(_queue),
+        isPlaying: true,
+        isLoading: false,
+        position: Duration.zero,
       );
-      await _player.setSpeed(state.speed);
-    } else {
-      _queue = [songToPlay];
-      _currentIndex = 0;
-      final u = songToPlay.url.isNotEmpty ? songToPlay.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-      await _player.setAudioSource(AudioSource.uri(Uri.parse(u)));
-      await _player.setSpeed(state.speed);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        currentSong: songToPlay,
+        queue: List.from(_queue),
+        isPlaying: false,
+      );
     }
-    _player.play();
-    state = state.copyWith(
-      currentSong: songToPlay,
-      queue: List.from(_queue),
-      isPlaying: true,
-      isLoading: false,
-      position: Duration.zero,
-    );
   }
 
   Future<void> togglePlayPause() async {

@@ -63,11 +63,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ];
 
     final popularArtists = [
-      Artist(id: 'ar1', name: 'The Weeknd', imageUrl: 'https://picsum.photos/seed/weeknd/200/200'),
-      Artist(id: 'ar2', name: 'Ed Sheeran', imageUrl: 'https://picsum.photos/seed/edsheeran/200/200'),
-      Artist(id: 'ar3', name: 'Queen', imageUrl: 'https://picsum.photos/seed/queen/200/200'),
-      Artist(id: 'ar4', name: 'Taylor Swift', imageUrl: 'https://picsum.photos/seed/taylor/200/200'),
-      Artist(id: 'ar5', name: 'Dua Lipa', imageUrl: 'https://picsum.photos/seed/dualipa/200/200'),
+      Artist(id: 'a1', name: 'The Weeknd', imageUrl: 'https://picsum.photos/seed/weeknd/200/200'),
+      Artist(id: 'a2', name: 'Ed Sheeran', imageUrl: 'https://picsum.photos/seed/edsheeran/200/200'),
+      Artist(id: 'a3', name: 'Queen', imageUrl: 'https://picsum.photos/seed/queen/200/200'),
+      Artist(id: 'a4', name: 'Eagles', imageUrl: 'https://picsum.photos/seed/eagles/200/200'),
+      Artist(id: 'a5', name: 'Michael Jackson', imageUrl: 'https://picsum.photos/seed/mj/200/200'),
     ];
 
     return Scaffold(
