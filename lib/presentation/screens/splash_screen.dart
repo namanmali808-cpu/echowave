@@ -34,12 +34,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
     _controller.forward();
-    _initApp();
-  }
-
-  Future<void> _initApp() async {
-    await _checkForUpdate();
-    await _navigateAfterDelay();
+    _checkForUpdate();
+    _navigateAfterDelay();
   }
 
   Future<void> _checkForUpdate() async {

@@ -149,24 +149,17 @@ class UpdateService {
     }
   }
 
-  Future<void> installUpdate(String filePath) async {
+  Future<void> installUpdate(String downloadUrl) async {
     try {
-      final file = File(filePath);
-      if (!await file.exists()) {
-        throw DownloadException(
-          message: 'Update file not found at $filePath',
-        );
-      }
-
       await launchUrl(
-        Uri.parse('file://$filePath'),
+        Uri.parse(downloadUrl),
         mode: LaunchMode.externalApplication,
       );
     } on AppException {
       rethrow;
     } catch (e, stackTrace) {
       throw DownloadException(
-        message: 'Failed to install update: ${e.toString()}',
+        message: 'Failed to start update download: ${e.toString()}',
         stackTrace: stackTrace,
       );
     }
@@ -176,8 +169,7 @@ class UpdateService {
     final updateInfo = await checkForUpdate();
     if (updateInfo == null) return;
 
-    final filePath = await downloadUpdate(updateInfo);
-    await installUpdate(filePath);
+    await installUpdate(updateInfo.downloadUrl);
   }
 
   void cancelDownload() {
