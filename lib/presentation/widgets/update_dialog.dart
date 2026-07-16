@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:echowave/data/services/update_service.dart';
 
@@ -31,12 +32,50 @@ class UpdateDialog extends StatefulWidget {
 }
 
 class _UpdateDialogState extends State<UpdateDialog> {
-  bool _isOpening = false;
+  bool _isDownloading = false;
+  double _progress = 0.0;
+  String? _downloadedPath;
+  bool _isInstalling = false;
+  StreamSubscription<double>? _progressSub;
 
-  Future<void> _update() async {
-    setState(() => _isOpening = true);
+  @override
+  void initState() {
+    super.initState();
+    _progressSub = widget.updateService.downloadProgressStream.listen((p) {
+      if (mounted) {
+        setState(() => _progress = p);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _progressSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _startDownload() async {
+    setState(() => _isDownloading = true);
     try {
-      await widget.updateService.installUpdate(widget.updateInfo.downloadUrl);
+      final path = await widget.updateService.downloadUpdate(widget.updateInfo);
+      if (mounted) {
+        setState(() {
+          _downloadedPath = path;
+          _isDownloading = false;
+        });
+        _install();
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isDownloading = false);
+      }
+    }
+  }
+
+  Future<void> _install() async {
+    setState(() => _isInstalling = true);
+    try {
+      await widget.updateService.installUpdate(_downloadedPath!);
     } catch (_) {}
     if (mounted) {
       Navigator.pop(context);
@@ -45,6 +84,8 @@ class _UpdateDialogState extends State<UpdateDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final hasDownloaded = _downloadedPath != null;
+
     return Dialog(
       backgroundColor: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
@@ -62,16 +103,18 @@ class _UpdateDialogState extends State<UpdateDialog> {
                 shape: BoxShape.circle,
                 color: const Color(0xFF6C63FF).withOpacity(0.2),
               ),
-              child: const Icon(
-                Icons.system_update_rounded,
-                color: Color(0xFF6C63FF),
-                size: 32,
-              ),
+              child: hasDownloaded
+                  ? const Icon(Icons.check_circle, color: Colors.green, size: 32)
+                  : const Icon(
+                      Icons.system_update_rounded,
+                      color: Color(0xFF6C63FF),
+                      size: 32,
+                    ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Update Available',
-              style: TextStyle(
+            Text(
+              hasDownloaded ? 'Download Complete' : 'Update Available',
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -106,23 +149,64 @@ class _UpdateDialogState extends State<UpdateDialog> {
                 ),
               ),
             ],
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isOpening ? null : _update,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+            if (_isDownloading) ...[
+              const SizedBox(height: 20),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: _progress,
+                  minHeight: 8,
+                  backgroundColor: Colors.white.withOpacity(0.1),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFF6C63FF),
                   ),
                 ),
-                child: Text(
-                  _isOpening ? 'Opening...' : 'Update Now',
-                  style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${(_progress * 100).toStringAsFixed(0)}%',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 13,
                 ),
               ),
-            ),
+            ],
+            const SizedBox(height: 24),
+            if (!hasDownloaded)
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isDownloading ? null : _startDownload,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    _isDownloading ? 'Downloading...' : 'Update',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            if (hasDownloaded) ...[
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isInstalling ? null : _install,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    _isInstalling ? 'Installing...' : 'Install',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

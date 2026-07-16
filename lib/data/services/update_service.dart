@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:open_filex/open_filex.dart';
 
 import 'package:echowave/core/constants/app_constants.dart';
 import 'package:echowave/core/errors/app_exception.dart';
@@ -149,17 +149,25 @@ class UpdateService {
     }
   }
 
-  Future<void> installUpdate(String downloadUrl) async {
+  Future<void> installUpdate(String filePath) async {
     try {
-      await launchUrl(
-        Uri.parse(downloadUrl),
-        mode: LaunchMode.externalApplication,
-      );
+      final file = File(filePath);
+      if (!await file.exists()) {
+        throw DownloadException(
+          message: 'Update file not found at $filePath',
+        );
+      }
+      final result = await OpenFilex.open(filePath);
+      if (result.type != ResultType.done) {
+        throw DownloadException(
+          message: 'Failed to open installer: ${result.message}',
+        );
+      }
     } on AppException {
       rethrow;
     } catch (e, stackTrace) {
       throw DownloadException(
-        message: 'Failed to start update download: ${e.toString()}',
+        message: 'Failed to install update: ${e.toString()}',
         stackTrace: stackTrace,
       );
     }
@@ -169,7 +177,8 @@ class UpdateService {
     final updateInfo = await checkForUpdate();
     if (updateInfo == null) return;
 
-    await installUpdate(updateInfo.downloadUrl);
+    final filePath = await downloadUpdate(updateInfo);
+    await installUpdate(filePath);
   }
 
   void cancelDownload() {
