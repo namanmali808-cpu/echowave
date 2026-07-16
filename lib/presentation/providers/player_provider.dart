@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:echowave/domain/entities/song.dart';
+import 'package:echowave/data/datasources/remote_datasource.dart';
 
 enum LoopModeState { off, one, all }
 
@@ -15,6 +16,7 @@ class PlayerStateData {
   final Duration position;
   final Duration duration;
   final bool isLoading;
+  final String? errorMessage;
 
   const PlayerStateData({
     this.currentSong,
@@ -26,6 +28,7 @@ class PlayerStateData {
     this.position = Duration.zero,
     this.duration = Duration.zero,
     this.isLoading = false,
+    this.errorMessage,
   });
 
   PlayerStateData copyWith({
@@ -38,6 +41,7 @@ class PlayerStateData {
     Duration? position,
     Duration? duration,
     bool? isLoading,
+    String? errorMessage,
   }) {
     return PlayerStateData(
       currentSong: currentSong ?? this.currentSong,
@@ -49,6 +53,7 @@ class PlayerStateData {
       position: position ?? this.position,
       duration: duration ?? this.duration,
       isLoading: isLoading ?? this.isLoading,
+      errorMessage: errorMessage,
     );
   }
 }
@@ -91,13 +96,25 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
   }
 
   Future<void> playSong(Song song, {List<Song>? queue}) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
     Song songToPlay = song;
-    if (songToPlay.url.isEmpty) {
-      songToPlay = songToPlay.copyWith(
-        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      );
+
+    if (songToPlay.url.isEmpty && songToPlay.id.startsWith('yt_')) {
+      final videoId = songToPlay.id.replaceFirst('yt_', '');
+      final uri = await RemoteDataSource.getYouTubeAudioUri(videoId);
+      if (uri != null) {
+        songToPlay = songToPlay.copyWith(url: uri.toString());
+      }
     }
+
+    if (songToPlay.url.isEmpty) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'No audio available for this song',
+      );
+      return;
+    }
+
     try {
       await _player.stop();
       if (queue != null) {
@@ -105,10 +122,7 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
         _currentIndex = queue.indexWhere((s) => s.id == song.id);
         if (_currentIndex < 0) _currentIndex = 0;
         _queue[_currentIndex] = songToPlay;
-        final sources = _queue.map((s) {
-          final u = s.url.isNotEmpty ? s.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-          return AudioSource.uri(Uri.parse(u));
-        }).toList();
+        final sources = _queue.map((s) => _audioSourceFor(s)).toList();
         await _player.setAudioSource(
           ConcatenatingAudioSource(children: sources),
           initialIndex: _currentIndex,
@@ -116,9 +130,7 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
       } else {
         _queue = [songToPlay];
         _currentIndex = 0;
-        await _player.setAudioSource(
-          AudioSource.uri(Uri.parse(songToPlay.url)),
-        );
+        await _player.setAudioSource(_audioSourceFor(songToPlay));
       }
       await _player.setSpeed(state.speed);
       await _player.play();
@@ -135,8 +147,25 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
         currentSong: songToPlay,
         queue: List.from(_queue),
         isPlaying: false,
+        errorMessage: 'Failed to play audio',
       );
     }
+  }
+
+  AudioSource _audioSourceFor(Song song) {
+    final url = song.url.isNotEmpty
+        ? song.url
+        : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+    final fromYt = song.id.startsWith('yt_');
+    return AudioSource.uri(
+      Uri.parse(url),
+      headers: fromYt
+          ? {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Referer': 'https://www.youtube.com/',
+            }
+          : null,
+    );
   }
 
   Future<void> togglePlayPause() async {

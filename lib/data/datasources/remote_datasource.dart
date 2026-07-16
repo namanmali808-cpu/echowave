@@ -531,6 +531,19 @@ class RemoteDataSource {
     return _soundhelixUrls[index % _soundhelixUrls.length];
   }
 
+  static Future<Uri?> getYouTubeAudioUri(String videoId) async {
+    try {
+      final manifest = await _yt.videos.streams.getManifest(videoId);
+      if (manifest.audioOnly.isNotEmpty) {
+        return manifest.audioOnly.withHighestBitrate().url;
+      }
+      if (manifest.muxed.isNotEmpty) {
+        return manifest.muxed.withHighestBitrate().url;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   static Future<List<SongModel>> demoSongs() async {
     try {
       final results = await _yt.search.search('popular music songs 2024');
