@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:echowave/domain/entities/song.dart';
-import 'package:echowave/data/datasources/remote_datasource.dart';
 
 enum LoopModeState { off, one, all }
 
@@ -91,22 +90,9 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
     }
   }
 
-  Future<String> _getYouTubeAudioUrl(String videoId) async {
-    return RemoteDataSource.getYouTubeAudioUrl(videoId);
-  }
-
   Future<void> playSong(Song song, {List<Song>? queue}) async {
     state = state.copyWith(isLoading: true);
     Song songToPlay = song;
-    try {
-      if (songToPlay.url.isEmpty && songToPlay.id.startsWith('yt_')) {
-        final videoId = songToPlay.id.replaceFirst('yt_', '');
-        final url = await _getYouTubeAudioUrl(videoId);
-        if (url.isNotEmpty) {
-          songToPlay = songToPlay.copyWith(url: url);
-        }
-      }
-    } catch (_) {}
     if (songToPlay.url.isEmpty) {
       songToPlay = songToPlay.copyWith(
         url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',

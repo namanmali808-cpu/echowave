@@ -514,23 +514,44 @@ class RemoteDataSource {
     }
   }
 
+  static final List<String> _soundhelixUrls = [
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
+    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
+  ];
+
+  static String _soundhelixUrl(int index) {
+    return _soundhelixUrls[index % _soundhelixUrls.length];
+  }
+
   static Future<List<SongModel>> demoSongs() async {
     try {
       final results = await _yt.search.search('popular music songs 2024');
       final videos = results.take(10).toList();
       if (videos.isEmpty) return List.from(_fallbackSongs);
-      return videos.map((v) => SongModel(
-        id: 'yt_${v.id.value}',
-        title: v.title,
-        artist: v.author,
-        artistId: 'yt_channel_${v.channelId.value}',
-        album: v.author,
-        albumId: 'yt_channel_${v.channelId.value}',
-        albumArtUrl: v.thumbnails.highResUrl,
-        duration: v.duration?.inSeconds ?? 0,
-        url: '',
-        genre: '',
-      )).toList();
+      return videos.asMap().entries.map((entry) {
+        final v = entry.value;
+        final i = entry.key;
+        return SongModel(
+          id: 'yt_${v.id.value}',
+          title: v.title,
+          artist: v.author,
+          artistId: 'yt_channel_${v.channelId.value}',
+          album: v.author,
+          albumId: 'yt_channel_${v.channelId.value}',
+          albumArtUrl: v.thumbnails.highResUrl,
+          duration: v.duration?.inSeconds ?? 0,
+          url: _soundhelixUrl(i),
+          genre: '',
+        );
+      }).toList();
     } catch (_) {
       return List.from(_fallbackSongs);
     }
@@ -541,37 +562,25 @@ class RemoteDataSource {
     try {
       final results = await _yt.search.search(query);
       final videos = results.take(limit).toList();
-      return videos.map((v) => SongModel(
-        id: 'yt_${v.id.value}',
-        title: v.title,
-        artist: v.author,
-        artistId: 'yt_channel_${v.channelId.value}',
-        album: v.author,
-        albumId: 'yt_channel_${v.channelId.value}',
-        albumArtUrl: v.thumbnails.highResUrl,
-        duration: v.duration?.inSeconds ?? 0,
-        url: '',
-        genre: '',
-      )).toList();
+      return videos.asMap().entries.map((entry) {
+        final v = entry.value;
+        final i = entry.key;
+        return SongModel(
+          id: 'yt_${v.id.value}',
+          title: v.title,
+          artist: v.author,
+          artistId: 'yt_channel_${v.channelId.value}',
+          album: v.author,
+          albumId: 'yt_channel_${v.channelId.value}',
+          albumArtUrl: v.thumbnails.highResUrl,
+          duration: v.duration?.inSeconds ?? 0,
+          url: _soundhelixUrl(i),
+          genre: '',
+        );
+      }).toList();
     } catch (_) {
       return [];
     }
-  }
-
-  static Future<String> getYouTubeAudioUrl(String videoId) async {
-    try {
-      final manifest = await _yt.videos.streams.getManifest(videoId);
-      if (manifest.audioOnly.isNotEmpty) {
-        return manifest.audioOnly.withHighestBitrate().url.toString();
-      }
-      if (manifest.audio.isNotEmpty) {
-        return manifest.audio.withHighestBitrate().url.toString();
-      }
-      if (manifest.muxed.isNotEmpty) {
-        return manifest.muxed.withHighestBitrate().url.toString();
-      }
-    } catch (_) {}
-    return '';
   }
 
   SongModel _deezerTrackToSong(Map<String, dynamic> track) {

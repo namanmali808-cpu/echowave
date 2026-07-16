@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:echowave/domain/entities/album.dart';
 import 'package:echowave/domain/entities/artist.dart';
 import 'package:echowave/domain/entities/song.dart';
 import 'package:echowave/data/datasources/remote_datasource.dart';
@@ -54,13 +53,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final demo = _songs ?? <Song>[];
     final recentlyPlayed = demo;
     final trendingNow = demo.reversed.toList();
-
-    final madeForYou = [
-      Album(id: 'al1', title: 'Today\'s Top Hits', artist: 'Various', artistId: 'v1', coverUrl: 'https://picsum.photos/seed/top-hits/200/200', songs: const []),
-      Album(id: 'al2', title: 'Chill Vibes', artist: 'Various', artistId: 'v2', coverUrl: 'https://picsum.photos/seed/chill/200/200', songs: const []),
-      Album(id: 'al3', title: 'Workout Energy', artist: 'Various', artistId: 'v3', coverUrl: 'https://picsum.photos/seed/workout/200/200', songs: const []),
-      Album(id: 'al4', title: 'Late Night Jazz', artist: 'Various', artistId: 'v4', coverUrl: 'https://picsum.photos/seed/jazz/200/200', songs: const []),
-    ];
 
     final popularArtists = [
       Artist(id: 'a1', name: 'The Weeknd', imageUrl: 'https://picsum.photos/seed/weeknd/200/200'),
@@ -155,26 +147,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               onTap: () {
                                 ref.read(playerProvider.notifier).playSong(song, queue: recentlyPlayed);
                               },
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    _SectionHeader(title: 'Made for You', onSeeAll: () {}),
-                    SliverToBoxAdapter(
-                      child: SizedBox(
-                        height: 180,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: madeForYou.length,
-                          itemBuilder: (context, index) {
-                            final album = madeForYou[index];
-                            return AlbumCard(
-                              imageUrl: album.coverUrl,
-                              title: album.title,
-                              subtitle: album.artist,
-                              onTap: () => context.push('/album/${album.id}'),
                             );
                           },
                         ),

@@ -269,76 +269,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _buildBrowseSuggestions() {
-    final categories = [
-      'Pop', 'Rock', 'Hip-Hop', 'R&B', 'Jazz',
-      'Classical', 'Electronic', 'Indie', 'Metal', 'Country',
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.all(20),
+    return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Browse All',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white.withOpacity(0.9),
-            ),
+          Icon(
+            Icons.search_rounded,
+            size: 80,
+            color: Colors.white.withOpacity(0.2),
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 2.5,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        _categoryColor(index),
-                        _categoryColor(index).withOpacity(0.7),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    categories[index],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                );
-              },
+          Text(
+            'Search for songs, artists, or albums',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 16,
             ),
           ),
         ],
       ),
     );
-  }
-
-  Color _categoryColor(int index) {
-    const colors = [
-      Color(0xFFE1332D),
-      Color(0xFF1DB954),
-      Color(0xFFFF6584),
-      Color(0xFF6C63FF),
-      Color(0xFFF59E0B),
-      Color(0xFF10B981),
-      Color(0xFF3B82F6),
-      Color(0xFF8B5CF6),
-      Color(0xFFEC4899),
-      Color(0xFF14B8A6),
-    ];
-    return colors[index % colors.length];
   }
 }
