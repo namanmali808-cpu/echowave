@@ -20,6 +20,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<Song>? _songs;
+  bool _loading = true;
 
   @override
   void initState() {
@@ -28,10 +29,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _loadSongs() async {
+    setState(() => _loading = true);
     final songs = await RemoteDataSource.demoSongs();
     if (mounted) {
       setState(() {
         _songs = songs.map((m) => m.toEntity()).toList();
+        _loading = false;
       });
     }
   }
@@ -47,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerProvider);
 
+    final loading = _loading;
     final demo = _songs ?? <Song>[];
     final recentlyPlayed = demo;
     final trendingNow = demo.reversed.toList();
@@ -136,7 +140,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SliverToBoxAdapter(
                       child: SizedBox(
                         height: 180,
-                        child: ListView.builder(
+                        child: loading
+                            ? const Center(child: CircularProgressIndicator(color: Color(0xFF6C63FF)))
+                            : ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: recentlyPlayed.length,
