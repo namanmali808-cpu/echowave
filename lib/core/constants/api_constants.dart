@@ -23,6 +23,11 @@ class ApiConstants {
   static const String update = '/update';
   static const String lyrics = '/lyrics';
 
+  // Piped API (YouTube)
+  static const String pipedBase = 'https://pipedapi.kavin.rocks';
+  static const String pipedSearch = '/search';
+  static const String pipedStreams = '/streams';
+
   static String songById(String id) => '$songs/$id';
   static String playlistById(String id) => '$playlists/$id';
   static String streamSong(String id) => '$stream/$id';

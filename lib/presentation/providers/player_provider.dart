@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:echowave/domain/entities/song.dart';
@@ -90,27 +91,57 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
     }
   }
 
+  Future<String> _getYouTubeAudioUrl(String videoId) async {
+    try {
+      final dio = Dio(BaseOptions(
+        baseUrl: 'https://pipedapi.kavin.rocks',
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 30),
+      ));
+      final response = await dio.get('/streams/$videoId');
+      final data = response.data;
+      if (data is Map && data['audioStreams'] is List) {
+        final streams = data['audioStreams'] as List;
+        if (streams.isNotEmpty) {
+          return (streams.last as Map)['url'] as String? ?? '';
+        }
+      }
+    } catch (_) {}
+    return '';
+  }
+
   Future<void> playSong(Song song, {List<Song>? queue}) async {
     state = state.copyWith(isLoading: true);
+    Song songToPlay = song;
+    if (songToPlay.url.isEmpty && songToPlay.id.startsWith('yt_')) {
+      final videoId = songToPlay.id.replaceFirst('yt_', '');
+      final url = await _getYouTubeAudioUrl(videoId);
+      if (url.isNotEmpty) {
+        songToPlay = songToPlay.copyWith(url: url);
+      }
+    }
     if (queue != null) {
       _queue = List.from(queue);
       _currentIndex = queue.indexWhere((s) => s.id == song.id);
       if (_currentIndex < 0) _currentIndex = 0;
-      final sources = queue.map((s) => AudioSource.uri(Uri.parse(s.url))).toList();
+      if (songToPlay.url.isNotEmpty) {
+        _queue[_currentIndex] = songToPlay;
+      }
+      final sources = _queue.map((s) => AudioSource.uri(Uri.parse(s.url))).toList();
       await _player.setAudioSource(
         ConcatenatingAudioSource(children: sources),
         initialIndex: _currentIndex,
       );
       await _player.setSpeed(state.speed);
     } else {
-      _queue = [song];
+      _queue = [songToPlay];
       _currentIndex = 0;
-      await _player.setAudioSource(AudioSource.uri(Uri.parse(song.url)));
+      await _player.setAudioSource(AudioSource.uri(Uri.parse(songToPlay.url)));
       await _player.setSpeed(state.speed);
     }
     _player.play();
     state = state.copyWith(
-      currentSong: song,
+      currentSong: songToPlay,
       queue: List.from(_queue),
       isPlaying: true,
       isLoading: false,

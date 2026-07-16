@@ -27,9 +27,8 @@ class SongRepositoryImpl implements SongRepository {
   @override
   Future<List<Song>> getSongs({int page = 1, int limit = 20}) async {
     _backgroundFetchSongs(page, limit);
-    return RemoteDataSource.demoSongs
-        .map((m) => m.toEntity())
-        .toList();
+    final songs = await RemoteDataSource.demoSongs();
+    return songs.map((m) => m.toEntity()).toList();
   }
 
   Future<void> _backgroundFetchSongs(int page, int limit) async {
@@ -69,8 +68,9 @@ class SongRepositoryImpl implements SongRepository {
           .toList();
       return filtered.map((m) => m.toEntity()).toList();
     }
+    final songs = await RemoteDataSource.demoSongs();
     final lowerQuery = query.toLowerCase();
-    return RemoteDataSource.demoSongs
+    return songs
         .where((s) =>
             s.title.toLowerCase().contains(lowerQuery) ||
             s.artist.toLowerCase().contains(lowerQuery))
@@ -86,12 +86,11 @@ class SongRepositoryImpl implements SongRepository {
         return songModel.toEntity();
       } catch (_) {}
     }
+    final songs = await RemoteDataSource.demoSongs();
     try {
-      return RemoteDataSource.demoSongs
-          .firstWhere((s) => s.id == id)
-          .toEntity();
+      return songs.firstWhere((s) => s.id == id).toEntity();
     } catch (_) {
-      return RemoteDataSource.demoSongs[0].toEntity();
+      return songs[0].toEntity();
     }
   }
 
@@ -231,8 +230,9 @@ class SongRepositoryImpl implements SongRepository {
         return await _remoteDataSource.getStreamUrl(songId, quality: quality);
       } catch (_) {}
     }
+    final songs = await RemoteDataSource.demoSongs();
     try {
-      final demo = RemoteDataSource.demoSongs.firstWhere((s) => s.id == songId);
+      final demo = songs.firstWhere((s) => s.id == songId);
       if (demo.url.isNotEmpty) return demo.url;
     } catch (_) {}
     return '';

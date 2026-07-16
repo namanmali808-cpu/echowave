@@ -33,7 +33,16 @@ class RemoteDataSource {
     ),
   );
 
-  static final List<SongModel> demoSongs = [
+  static final Dio _pipedDio = Dio(
+    BaseOptions(
+      baseUrl: 'https://pipedapi.kavin.rocks',
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {'Accept': 'application/json'},
+    ),
+  );
+
+  static final List<SongModel> _fallbackSongs = [
     SongModel(
       id: 'demo_1',
       title: 'Blinding Lights',
@@ -178,7 +187,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 200,
       genre: ['Pop', 'R&B'],
-      songs: [demoSongs[0]],
+      songs: [_fallbackSongs[0]],
     ),
     AlbumModel(
       id: 'al2',
@@ -191,7 +200,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 233,
       genre: ['Pop'],
-      songs: [demoSongs[1]],
+      songs: [_fallbackSongs[1]],
     ),
     AlbumModel(
       id: 'al3',
@@ -204,7 +213,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 354,
       genre: ['Rock'],
-      songs: [demoSongs[2]],
+      songs: [_fallbackSongs[2]],
     ),
     AlbumModel(
       id: 'al4',
@@ -217,7 +226,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 391,
       genre: ['Rock'],
-      songs: [demoSongs[3]],
+      songs: [_fallbackSongs[3]],
     ),
     AlbumModel(
       id: 'al5',
@@ -230,7 +239,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 294,
       genre: ['Pop'],
-      songs: [demoSongs[4]],
+      songs: [_fallbackSongs[4]],
     ),
     AlbumModel(
       id: 'al6',
@@ -243,7 +252,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 482,
       genre: ['Rock'],
-      songs: [demoSongs[5]],
+      songs: [_fallbackSongs[5]],
     ),
     AlbumModel(
       id: 'al7',
@@ -256,7 +265,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 301,
       genre: ['Rock', 'Grunge'],
-      songs: [demoSongs[6]],
+      songs: [_fallbackSongs[6]],
     ),
     AlbumModel(
       id: 'al8',
@@ -269,7 +278,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 231,
       genre: ['Pop'],
-      songs: [demoSongs[7]],
+      songs: [_fallbackSongs[7]],
     ),
     AlbumModel(
       id: 'al9',
@@ -282,7 +291,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 356,
       genre: ['Rock'],
-      songs: [demoSongs[8]],
+      songs: [_fallbackSongs[8]],
     ),
     AlbumModel(
       id: 'al10',
@@ -295,7 +304,7 @@ class RemoteDataSource {
       songCount: 1,
       totalDuration: 187,
       genre: ['Pop'],
-      songs: [demoSongs[9]],
+      songs: [_fallbackSongs[9]],
     ),
   ];
 
@@ -309,7 +318,7 @@ class RemoteDataSource {
       monthlyListeners: 80000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[0]],
+      topSongs: [_fallbackSongs[0]],
       albums: [demoAlbums[0]],
     ),
     ArtistModel(
@@ -321,7 +330,7 @@ class RemoteDataSource {
       monthlyListeners: 70000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[1]],
+      topSongs: [_fallbackSongs[1]],
       albums: [demoAlbums[1]],
     ),
     ArtistModel(
@@ -333,7 +342,7 @@ class RemoteDataSource {
       monthlyListeners: 50000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[2]],
+      topSongs: [_fallbackSongs[2]],
       albums: [demoAlbums[2]],
     ),
     ArtistModel(
@@ -345,7 +354,7 @@ class RemoteDataSource {
       monthlyListeners: 40000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[3]],
+      topSongs: [_fallbackSongs[3]],
       albums: [demoAlbums[3]],
     ),
     ArtistModel(
@@ -357,7 +366,7 @@ class RemoteDataSource {
       monthlyListeners: 60000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[4]],
+      topSongs: [_fallbackSongs[4]],
       albums: [demoAlbums[4]],
     ),
     ArtistModel(
@@ -369,7 +378,7 @@ class RemoteDataSource {
       monthlyListeners: 35000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[5]],
+      topSongs: [_fallbackSongs[5]],
       albums: [demoAlbums[5]],
     ),
     ArtistModel(
@@ -381,7 +390,7 @@ class RemoteDataSource {
       monthlyListeners: 45000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[6]],
+      topSongs: [_fallbackSongs[6]],
       albums: [demoAlbums[6]],
     ),
     ArtistModel(
@@ -393,7 +402,7 @@ class RemoteDataSource {
       monthlyListeners: 30000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[7]],
+      topSongs: [_fallbackSongs[7]],
       albums: [demoAlbums[7]],
     ),
     ArtistModel(
@@ -405,7 +414,7 @@ class RemoteDataSource {
       monthlyListeners: 25000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[8]],
+      topSongs: [_fallbackSongs[8]],
       albums: [demoAlbums[8]],
     ),
     ArtistModel(
@@ -417,7 +426,7 @@ class RemoteDataSource {
       monthlyListeners: 20000000,
       songCount: 1,
       albumCount: 1,
-      topSongs: [demoSongs[9]],
+      topSongs: [_fallbackSongs[9]],
       albums: [demoAlbums[9]],
     ),
   ];
@@ -427,7 +436,7 @@ class RemoteDataSource {
       id: 'pl_1',
       name: "Today's Hits",
       description: 'The biggest songs right now.',
-      coverUrl: demoSongs[0].albumArtUrl,
+      coverUrl: _fallbackSongs[0].albumArtUrl,
       createdBy: 'EchoWave',
       songCount: 4,
       totalDuration: 958,
@@ -435,13 +444,13 @@ class RemoteDataSource {
       isLikedSongs: false,
       createdAt: DateTime(2024, 1, 1),
       updatedAt: DateTime(2024, 6, 1),
-      songs: [demoSongs[0], demoSongs[1], demoSongs[4], demoSongs[7]],
+      songs: [_fallbackSongs[0], _fallbackSongs[1], _fallbackSongs[4], _fallbackSongs[7]],
     ),
     PlaylistModel(
       id: 'pl_2',
       name: 'Rock Classics',
       description: 'Legendary rock anthems.',
-      coverUrl: demoSongs[2].albumArtUrl,
+      coverUrl: _fallbackSongs[2].albumArtUrl,
       createdBy: 'EchoWave',
       songCount: 5,
       totalDuration: 1884,
@@ -450,18 +459,18 @@ class RemoteDataSource {
       createdAt: DateTime(2024, 1, 1),
       updatedAt: DateTime(2024, 6, 1),
       songs: [
-        demoSongs[2],
-        demoSongs[3],
-        demoSongs[5],
-        demoSongs[6],
-        demoSongs[8],
+        _fallbackSongs[2],
+        _fallbackSongs[3],
+        _fallbackSongs[5],
+        _fallbackSongs[6],
+        _fallbackSongs[8],
       ],
     ),
     PlaylistModel(
       id: 'pl_3',
       name: 'Chill Vibes',
       description: 'Relax and unwind.',
-      coverUrl: demoSongs[9].albumArtUrl,
+      coverUrl: _fallbackSongs[9].albumArtUrl,
       createdBy: 'EchoWave',
       songCount: 3,
       totalDuration: 620,
@@ -469,13 +478,13 @@ class RemoteDataSource {
       isLikedSongs: false,
       createdAt: DateTime(2024, 1, 1),
       updatedAt: DateTime(2024, 6, 1),
-      songs: [demoSongs[0], demoSongs[9], demoSongs[7]],
+      songs: [_fallbackSongs[0], _fallbackSongs[9], _fallbackSongs[7]],
     ),
     PlaylistModel(
       id: 'pl_4',
       name: 'All Songs',
       description: 'Every song available on EchoWave.',
-      coverUrl: demoSongs[0].albumArtUrl,
+      coverUrl: _fallbackSongs[0].albumArtUrl,
       createdBy: 'EchoWave',
       songCount: 10,
       totalDuration: 3029,
@@ -483,13 +492,13 @@ class RemoteDataSource {
       isLikedSongs: false,
       createdAt: DateTime(2024, 1, 1),
       updatedAt: DateTime(2024, 6, 1),
-      songs: List.from(demoSongs),
+      songs: List.from(_fallbackSongs),
     ),
   ];
 
   SongModel? _findDemoSong(String id) {
     try {
-      return demoSongs.firstWhere((s) => s.id == id);
+      return _fallbackSongs.firstWhere((s) => s.id == id);
     } catch (_) {
       return null;
     }
@@ -517,6 +526,91 @@ class RemoteDataSource {
     } catch (_) {
       return null;
     }
+  }
+
+  static Future<List<SongModel>> demoSongs() async {
+    try {
+      final response = await _pipedDio.get('/search', queryParameters: {
+        'q': 'popular music',
+        'filter': 'videos',
+      });
+      final data = response.data;
+      if (data is Map && data['items'] is List) {
+        return (data['items'] as List)
+            .whereType<Map<String, dynamic>>()
+            .where((item) =>
+                item['duration'] != null && (item['duration'] as int) > 30)
+            .take(10)
+            .map((item) => SongModel(
+                  id:
+                      'yt_${(item['url'] as String?)?.replaceAll('/watch?v=', '') ?? ''}',
+                  title: item['title'] as String? ?? 'Unknown',
+                  artist: item['uploaderName'] as String? ?? 'Unknown',
+                  artistId:
+                      'yt_uploader_${item['uploaderName'] ?? ''}',
+                  album: item['uploaderName'] as String? ?? '',
+                  albumId:
+                      'yt_album_${item['uploaderName'] ?? ''}',
+                  albumArtUrl: item['thumbnail'] as String? ?? '',
+                  duration: (item['duration'] as int?) ?? 0,
+                  url: '',
+                  genre: '',
+                ))
+            .toList();
+      }
+    } catch (_) {}
+    return List.from(_fallbackSongs);
+  }
+
+  Future<List<SongModel>> searchYouTube(String query,
+      {int limit = 20}) async {
+    try {
+      final response = await _pipedDio.get('/search', queryParameters: {
+        'q': query,
+        'filter': 'videos',
+      });
+      final data = response.data;
+      if (data is Map && data['items'] is List) {
+        return (data['items'] as List)
+            .whereType<Map<String, dynamic>>()
+            .where((item) =>
+                item['duration'] != null && (item['duration'] as int) > 30)
+            .take(limit)
+            .map((item) => SongModel(
+                  id:
+                      'yt_${item['url']?.toString().replaceAll('/watch?v=', '') ?? DateTime.now().millisecondsSinceEpoch}',
+                  title: item['title'] as String? ?? 'Unknown',
+                  artist: item['uploaderName'] as String? ?? 'Unknown',
+                  artistId:
+                      'yt_uploader_${item['uploaderName'] ?? ''}',
+                  album: item['uploaderName'] as String? ?? '',
+                  albumId:
+                      'yt_album_${item['uploaderName'] ?? ''}',
+                  albumArtUrl: item['thumbnail'] as String? ?? '',
+                  duration: (item['duration'] as int?) ?? 0,
+                  url: '',
+                  genre: '',
+                ))
+            .toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<String> getYouTubeAudioUrl(String videoId) async {
+    try {
+      final response = await _pipedDio.get('/streams/$videoId');
+      final data = response.data;
+      if (data is Map && data['audioStreams'] is List) {
+        final streams = data['audioStreams'] as List;
+        if (streams.isNotEmpty) {
+          return (streams.last as Map)['url'] as String? ?? '';
+        }
+      }
+    } catch (_) {}
+    return '';
   }
 
   SongModel _deezerTrackToSong(Map<String, dynamic> track) {
@@ -605,10 +699,10 @@ class RemoteDataSource {
     } catch (_) {
       final start = (page - 1) * limit;
       final end = start + limit;
-      if (start >= demoSongs.length) return [];
-      return demoSongs.sublist(
+      if (start >= _fallbackSongs.length) return [];
+      return _fallbackSongs.sublist(
         start,
-        end > demoSongs.length ? demoSongs.length : end,
+        end > _fallbackSongs.length ? _fallbackSongs.length : end,
       );
     }
   }
@@ -629,7 +723,7 @@ class RemoteDataSource {
       }
       return [];
     } catch (_) {
-      return demoSongs.take(limit).toList();
+      return _fallbackSongs.take(limit).toList();
     }
   }
 
@@ -728,7 +822,7 @@ class RemoteDataSource {
         return [];
       } catch (_) {
         final lowerQuery = query.toLowerCase();
-        return demoSongs
+        return _fallbackSongs
             .where((s) =>
                 s.title.toLowerCase().contains(lowerQuery) ||
                 s.artist.toLowerCase().contains(lowerQuery))
@@ -745,9 +839,9 @@ class RemoteDataSource {
       if (data is Map<String, dynamic>) {
         return _deezerTrackToSong(data);
       }
-      return _findDemoSong(id) ?? demoSongs[0];
+      return _findDemoSong(id) ?? _fallbackSongs[0];
     } catch (_) {
-      return _findDemoSong(id) ?? demoSongs[0];
+      return _findDemoSong(id) ?? _fallbackSongs[0];
     }
   }
 
@@ -853,7 +947,7 @@ class RemoteDataSource {
     } catch (_) {
       final demo = _findDemoArtist(id);
       if (demo != null) return demo.topSongs.cast<SongModel>();
-      return demoSongs.take(limit).toList();
+      return _fallbackSongs.take(limit).toList();
     }
   }
 

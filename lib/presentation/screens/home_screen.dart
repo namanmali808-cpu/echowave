@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:echowave/domain/entities/album.dart';
 import 'package:echowave/domain/entities/artist.dart';
+import 'package:echowave/domain/entities/song.dart';
 import 'package:echowave/data/datasources/remote_datasource.dart';
 import 'package:echowave/presentation/providers/player_provider.dart';
 import 'package:echowave/presentation/widgets/album_card.dart';
@@ -10,8 +11,30 @@ import 'package:echowave/presentation/widgets/artist_card.dart';
 import 'package:echowave/presentation/widgets/song_tile.dart';
 import 'package:echowave/presentation/widgets/mini_player.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  List<Song>? _songs;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSongs();
+  }
+
+  Future<void> _loadSongs() async {
+    final songs = await RemoteDataSource.demoSongs();
+    if (mounted) {
+      setState(() {
+        _songs = songs.map((m) => m.toEntity()).toList();
+      });
+    }
+  }
 
   String _greeting() {
     final hour = DateTime.now().hour;
@@ -21,10 +44,10 @@ class HomeScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final playerState = ref.watch(playerProvider);
 
-    final demo = RemoteDataSource.demoSongs.map((m) => m.toEntity()).toList();
+    final demo = _songs ?? <Song>[];
     final recentlyPlayed = demo;
     final trendingNow = demo.reversed.toList();
 
