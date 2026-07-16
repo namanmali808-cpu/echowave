@@ -105,7 +105,8 @@ class UpdateService {
       Directory dir;
       try {
         if (Platform.isAndroid) {
-          dir = Directory('/storage/emulated/0/Download');
+          final appDir = await getExternalStorageDirectory();
+          dir = Directory('${appDir!.path}/downloads');
           if (!await dir.exists()) {
             await dir.create(recursive: true);
           }
