@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:echowave/core/constants/api_constants.dart';
 import 'package:echowave/core/errors/app_exception.dart';
 import 'package:echowave/core/network/api_client.dart';
@@ -25,22 +26,7 @@ class RemoteDataSource {
     ),
   );
 
-  static final Dio _iTunesDio = Dio(
-    BaseOptions(
-      baseUrl: ApiConstants.itunesSearch,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ),
-  );
-
-  static final Dio _pipedDio = Dio(
-    BaseOptions(
-      baseUrl: 'https://pipedapi.kavin.rocks',
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {'Accept': 'application/json'},
-    ),
-  );
+  static final YoutubeExplode _yt = YoutubeExplode();
 
   static final List<SongModel> _fallbackSongs = [
     SongModel(
@@ -530,84 +516,54 @@ class RemoteDataSource {
 
   static Future<List<SongModel>> demoSongs() async {
     try {
-      final response = await _pipedDio.get('/search', queryParameters: {
-        'q': 'popular music',
-        'filter': 'videos',
-      });
-      final data = response.data;
-      if (data is Map && data['items'] is List) {
-        return (data['items'] as List)
-            .whereType<Map<String, dynamic>>()
-            .where((item) =>
-                item['duration'] != null && (item['duration'] as int) > 30)
-            .take(10)
-            .map((item) => SongModel(
-                  id:
-                      'yt_${(item['url'] as String?)?.replaceAll('/watch?v=', '') ?? ''}',
-                  title: item['title'] as String? ?? 'Unknown',
-                  artist: item['uploaderName'] as String? ?? 'Unknown',
-                  artistId:
-                      'yt_uploader_${item['uploaderName'] ?? ''}',
-                  album: item['uploaderName'] as String? ?? '',
-                  albumId:
-                      'yt_album_${item['uploaderName'] ?? ''}',
-                  albumArtUrl: item['thumbnail'] as String? ?? '',
-                  duration: (item['duration'] as int?) ?? 0,
-                  url: '',
-                  genre: '',
-                ))
-            .toList();
-      }
-    } catch (_) {}
-    return List.from(_fallbackSongs);
+      final results = await _yt.search.search('popular music songs 2024');
+      final videos = results.take(10).toList();
+      if (videos.isEmpty) return List.from(_fallbackSongs);
+      return videos.map((v) => SongModel(
+        id: 'yt_${v.id.value}',
+        title: v.title,
+        artist: v.author,
+        artistId: 'yt_channel_${v.channelId.value}',
+        album: v.author,
+        albumId: 'yt_channel_${v.channelId.value}',
+        albumArtUrl: v.thumbnails.highResUrl,
+        duration: v.duration?.inSeconds ?? 0,
+        url: '',
+        genre: '',
+      )).toList();
+    } catch (_) {
+      return List.from(_fallbackSongs);
+    }
   }
 
-  Future<List<SongModel>> searchYouTube(String query,
+  static Future<List<SongModel>> searchYouTube(String query,
       {int limit = 20}) async {
     try {
-      final response = await _pipedDio.get('/search', queryParameters: {
-        'q': query,
-        'filter': 'videos',
-      });
-      final data = response.data;
-      if (data is Map && data['items'] is List) {
-        return (data['items'] as List)
-            .whereType<Map<String, dynamic>>()
-            .where((item) =>
-                item['duration'] != null && (item['duration'] as int) > 30)
-            .take(limit)
-            .map((item) => SongModel(
-                  id:
-                      'yt_${item['url']?.toString().replaceAll('/watch?v=', '') ?? DateTime.now().millisecondsSinceEpoch}',
-                  title: item['title'] as String? ?? 'Unknown',
-                  artist: item['uploaderName'] as String? ?? 'Unknown',
-                  artistId:
-                      'yt_uploader_${item['uploaderName'] ?? ''}',
-                  album: item['uploaderName'] as String? ?? '',
-                  albumId:
-                      'yt_album_${item['uploaderName'] ?? ''}',
-                  albumArtUrl: item['thumbnail'] as String? ?? '',
-                  duration: (item['duration'] as int?) ?? 0,
-                  url: '',
-                  genre: '',
-                ))
-            .toList();
-      }
-      return [];
+      final results = await _yt.search.search(query);
+      final videos = results.take(limit).toList();
+      return videos.map((v) => SongModel(
+        id: 'yt_${v.id.value}',
+        title: v.title,
+        artist: v.author,
+        artistId: 'yt_channel_${v.channelId.value}',
+        album: v.author,
+        albumId: 'yt_channel_${v.channelId.value}',
+        albumArtUrl: v.thumbnails.highResUrl,
+        duration: v.duration?.inSeconds ?? 0,
+        url: '',
+        genre: '',
+      )).toList();
     } catch (_) {
       return [];
     }
   }
 
-  Future<String> getYouTubeAudioUrl(String videoId) async {
+  static Future<String> getYouTubeAudioUrl(String videoId) async {
     try {
-      final response = await _pipedDio.get('/streams/$videoId');
-      final data = response.data;
-      if (data is Map && data['audioStreams'] is List) {
-        final streams = data['audioStreams'] as List;
-        if (streams.isNotEmpty) {
-          return (streams.last as Map)['url'] as String? ?? '';
-        }
+      final manifest = await _yt.videos.streams.getManifest(videoId);
+      final audio = manifest.audioOnly;
+      if (audio.isNotEmpty) {
+        return audio.last.url.toString();
       }
     } catch (_) {}
     return '';
@@ -780,54 +736,14 @@ class RemoteDataSource {
   Future<List<SongModel>> searchSongs(String query,
       {int page = 1, int limit = 20}) async {
     try {
-      final response = await _deezerDio.get(
-        '/search',
-        queryParameters: {'q': query, 'limit': limit, 'index': (page - 1) * limit},
-      );
-      final data = response.data;
-      if (data is Map && data['data'] is List) {
-        return (data['data'] as List)
-            .whereType<Map<String, dynamic>>()
-            .map((e) => _deezerTrackToSong(e))
-            .toList();
-      }
-      return [];
+      return await searchYouTube(query, limit: limit);
     } catch (_) {
-      try {
-        final itunesResponse = await _iTunesDio.get('', queryParameters: {
-          'term': query,
-          'media': 'music',
-          'limit': limit,
-        });
-        final itunesData = itunesResponse.data;
-        if (itunesData is Map && itunesData['results'] is List) {
-          return (itunesData['results'] as List)
-              .whereType<Map<String, dynamic>>()
-              .map((track) => SongModel(
-                    id: 'itunes_${track['trackId']}',
-                    title: track['trackName'] ?? '',
-                    artist: track['artistName'] ?? '',
-                    artistId: 'itunes_artist_${track['artistId'] ?? track['trackId']}',
-                    album: track['collectionName'] ?? '',
-                    albumId: 'itunes_album_${track['collectionId'] ?? track['trackId']}',
-                    albumArtUrl: (track['artworkUrl100'] as String?)
-                            ?.replaceAll('100x100bb', '300x300bb') ??
-                        '',
-                    duration: ((track['trackTimeMillis'] as int?) ?? 0) ~/ 1000,
-                    url: track['previewUrl'] ?? '',
-                    genre: track['primaryGenreName'] as String? ?? '',
-                  ))
-              .toList();
-        }
-        return [];
-      } catch (_) {
-        final lowerQuery = query.toLowerCase();
-        return _fallbackSongs
-            .where((s) =>
-                s.title.toLowerCase().contains(lowerQuery) ||
-                s.artist.toLowerCase().contains(lowerQuery))
-            .toList();
-      }
+      final lowerQuery = query.toLowerCase();
+      return _fallbackSongs
+          .where((s) =>
+              s.title.toLowerCase().contains(lowerQuery) ||
+              s.artist.toLowerCase().contains(lowerQuery))
+          .toList();
     }
   }
 

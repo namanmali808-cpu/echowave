@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:echowave/domain/entities/song.dart';
+import 'package:echowave/data/datasources/remote_datasource.dart';
 
 enum LoopModeState { off, one, all }
 
@@ -92,22 +92,7 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
   }
 
   Future<String> _getYouTubeAudioUrl(String videoId) async {
-    try {
-      final dio = Dio(BaseOptions(
-        baseUrl: 'https://pipedapi.kavin.rocks',
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 30),
-      ));
-      final response = await dio.get('/streams/$videoId');
-      final data = response.data;
-      if (data is Map && data['audioStreams'] is List) {
-        final streams = data['audioStreams'] as List;
-        if (streams.isNotEmpty) {
-          return (streams.last as Map)['url'] as String? ?? '';
-        }
-      }
-    } catch (_) {}
-    return '';
+    return RemoteDataSource.getYouTubeAudioUrl(videoId);
   }
 
   Future<void> playSong(Song song, {List<Song>? queue}) async {
