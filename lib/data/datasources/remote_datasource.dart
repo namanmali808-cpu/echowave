@@ -549,10 +549,18 @@ class RemoteDataSource {
 
       if (await file.exists()) return filePath;
 
-      final audioStream = _yt.videos.streams.get(info);
-      final sink = file.openWrite();
-      await sink.addStream(audioStream);
-      await sink.close();
+      final dio = Dio();
+      await dio.download(
+        info.url.toString(),
+        filePath,
+        options: Options(
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer': 'https://www.youtube.com/',
+          },
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
 
       return filePath;
     } catch (_) {

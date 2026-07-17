@@ -97,13 +97,18 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
 
   Future<void> playSong(Song song, {List<Song>? queue}) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
+    await _player.stop();
     Song songToPlay = song;
 
-    if (songToPlay.url.isEmpty && songToPlay.id.startsWith('yt_')) {
+    if (songToPlay.id.startsWith('yt_')) {
       final videoId = songToPlay.id.replaceFirst('yt_', '');
       final filePath = await RemoteDataSource.downloadYouTubeAudio(videoId);
       if (filePath != null) {
         songToPlay = songToPlay.copyWith(url: filePath);
+      } else {
+        state = state.copyWith(
+          errorMessage: 'Could not fetch audio for this song',
+        );
       }
     }
 
@@ -116,7 +121,6 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
     }
 
     try {
-      await _player.stop();
       if (queue != null) {
         _queue = List.from(queue);
         _currentIndex = queue.indexWhere((s) => s.id == song.id);
