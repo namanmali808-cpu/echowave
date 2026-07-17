@@ -101,9 +101,9 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
 
     if (songToPlay.url.isEmpty && songToPlay.id.startsWith('yt_')) {
       final videoId = songToPlay.id.replaceFirst('yt_', '');
-      final uri = await RemoteDataSource.getYouTubeAudioUri(videoId);
-      if (uri != null) {
-        songToPlay = songToPlay.copyWith(url: uri.toString());
+      final filePath = await RemoteDataSource.downloadYouTubeAudio(videoId);
+      if (filePath != null) {
+        songToPlay = songToPlay.copyWith(url: filePath);
       }
     }
 
@@ -153,13 +153,13 @@ class PlayerNotifier extends StateNotifier<PlayerStateData> {
   }
 
   AudioSource _audioSourceFor(Song song) {
-    final url = song.url.isNotEmpty
-        ? song.url
-        : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-    final fromYt = song.id.startsWith('yt_');
+    final url = song.url;
+    if (url.startsWith('/') || url.startsWith('file://')) {
+      return AudioSource.file(url);
+    }
     return AudioSource.uri(
       Uri.parse(url),
-      headers: fromYt
+      headers: song.id.startsWith('yt_')
           ? {
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
               'Referer': 'https://www.youtube.com/',

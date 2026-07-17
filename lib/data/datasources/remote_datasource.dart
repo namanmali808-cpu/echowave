@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:echowave/core/constants/api_constants.dart';
 import 'package:echowave/core/errors/app_exception.dart';
 import 'package:echowave/core/network/api_client.dart';
@@ -531,17 +533,31 @@ class RemoteDataSource {
     return _soundhelixUrls[index % _soundhelixUrls.length];
   }
 
-  static Future<Uri?> getYouTubeAudioUri(String videoId) async {
+  static Future<String?> downloadYouTubeAudio(String videoId) async {
     try {
       final manifest = await _yt.videos.streams.getManifest(videoId);
-      if (manifest.audioOnly.isNotEmpty) {
-        return manifest.audioOnly.withHighestBitrate().url;
-      }
-      if (manifest.muxed.isNotEmpty) {
-        return manifest.muxed.withHighestBitrate().url;
-      }
-    } catch (_) {}
-    return null;
+      if (manifest.audioOnly.isEmpty && manifest.muxed.isEmpty) return null;
+
+      final audioOnly = manifest.audioOnly.isNotEmpty
+          ? manifest.audioOnly.withHighestBitrate()
+          : null;
+      final info = audioOnly ?? manifest.muxed.withHighestBitrate();
+
+      final dir = await getTemporaryDirectory();
+      final filePath = '${dir.path}/yt_$videoId.${info.container.name}';
+      final file = File(filePath);
+
+      if (await file.exists()) return filePath;
+
+      final audioStream = _yt.videos.streams.get(info);
+      final sink = file.openWrite();
+      await sink.addStream(audioStream);
+      await sink.close();
+
+      return filePath;
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<List<SongModel>> demoSongs() async {
